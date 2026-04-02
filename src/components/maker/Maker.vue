@@ -83,8 +83,7 @@ function exportCard() {
     download();
 }
 
-// 保存项目为JSON文件
-async function saveProject() {
+async function downloadProject() {
     try {
         const projectData = await serializeCard(rcard.value)
         const projectName = rcard.value.name || 'card-project'
@@ -95,13 +94,50 @@ async function saveProject() {
     }
 }
 
-// 打开项目文件选择器
+
+async function saveProject() {
+    try {
+        const projectData = await serializeCard(rcard.value)
+        const projectName = rcard.value.name || 'card-project'
+        const jsonContent = JSON.stringify(projectData, null, 2)
+        
+        if ('showSaveFilePicker' in window) {
+            try {
+                const handle = await (window as any).showSaveFilePicker({
+                    suggestedName: `${projectName}.json`,
+                    types: [
+                        {
+                            description: 'JSON Files',
+                            accept: { 'application/json': ['.json'] },
+                        },
+                    ],
+                })
+                
+                const writable = await handle.createWritable()
+                await writable.write(jsonContent)
+                await writable.close()
+                alert('Save successful!')
+            } catch (err: any) {
+                if (err.name !== 'AbortError') {
+                    console.error('Save error:', err)
+                    alert('Lỗi lưu dự án: ' + (err instanceof Error ? err.message : 'Unknown error'))
+                }
+            }
+        } else {
+            // Fallback: use traditional download if browser doesn't support File System API
+            downloadProject()
+        }
+    } catch (error) {
+        console.error('Failed to save project:', error)
+        alert('Lỗi lưu dự án: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    }
+}
+
 function openLoadProject() {
     const fileInput = document.getElementById('load-project-file') as HTMLInputElement
     fileInput?.click()
 }
 
-// 加载项目从JSON文件
 async function loadProject(event: Event) {
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]
@@ -122,13 +158,13 @@ async function loadProject(event: Event) {
         const projectJson = JSON.parse(text)
         
         if (!validateProject(projectJson)) {
-            alert('Tệp dự án không hợp lệ. Vui lòng kiểm tra định dạng tệp.')
+            alert('File không hợp lệ. Vui lòng kiểm tra định dạng file.')
             return
         }
         
         await deserializeCard(projectJson, rcard.value, rcvt.value)
         isCardChanged = true
-        alert('Dự án đã được tải thành công!')
+        alert('Load successful!')
     } catch (error) {
         console.error('Failed to load project:', error)
         alert('Lỗi tải dự án: ' + (error instanceof Error ? error.message : 'Unknown error'))
@@ -307,8 +343,9 @@ onMounted(() => {
             </div>
 
             <div class="row-flex-center">
-                <div class="btn" @click="saveProject()" title="Lưu toàn bộ dự án (có thể mở lại để chỉnh sửa)">💾 Lưu dự án</div>
-                <div class="btn" @click="openLoadProject()" title="Tải dự án từ file JSON">📂 Mở dự án</div>
+                <div class="btn" @click="saveProject()" title="Lưu dự án dưới dạng file JSON">💾 Save As</div>
+                <!-- <div class="btn" @click="downloadProject()" title="Tải xuống dự án dưới dạng file JSON">⬇️ Tải xuống</div> -->
+                <div class="btn" @click="openLoadProject()" title="Tải dự án từ file JSON">📂 Load Project</div>
             </div>
 
             <input id="load-project-file" type="file" accept=".json" @change="loadProject($event)" style="display: none;">
