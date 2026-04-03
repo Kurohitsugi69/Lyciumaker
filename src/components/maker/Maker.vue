@@ -280,40 +280,46 @@ function copyColorTag(event: Event) {
     alert('Đã copy thẻ màu: ' + tag + '\nHãy dán vào phần văn bản!');
 }
 
-function applyColorTag(event: Event) {
-    const color = (event.target as HTMLInputElement).value;
-    const colorHex = color.replace('#', '');
+const selectedColor = ref('#000000')
 
-    // Tìm textarea có selection đang chọn
-    let textarea: HTMLTextAreaElement | null = null;
-    let skillIndex = -1;
-    let savedSelection = { start: 0, end: 0 };
-
+function getSelectedSkillText() {
     const textareas = document.querySelectorAll('.skill-text') as NodeListOf<HTMLTextAreaElement>;
     for (let i = 0; i < textareas.length; i++) {
         const ta = textareas[i];
         if (ta.selectionStart !== ta.selectionEnd) {
-            textarea = ta;
-            skillIndex = i;
-            savedSelection = { start: ta.selectionStart, end: ta.selectionEnd };
-            break;
+            return {
+                skillIndex: i,
+                textarea: ta,
+                start: ta.selectionStart,
+                end: ta.selectionEnd,
+            }
         }
     }
+    return null
+}
 
-    if (!textarea || skillIndex === -1) {
-        alert('Vui lòng bôi đen đoạn văn bản cần đổi màu!');
-        return;
+function applyColorTagToSelection() {
+    const colorHex = selectedColor.value.replace('#', '')
+    const selected = getSelectedSkillText()
+    if (!selected) {
+        alert('Vui lòng bôi đen đoạn văn bản cần đổi màu!')
+        return
     }
 
-    const skill = rcard.value.skills[skillIndex];
-    const selectedText = skill.text.slice(savedSelection.start, savedSelection.end);
+    const skill = rcard.value.skills[selected.skillIndex]
+    const selectedText = skill.text.slice(selected.start, selected.end)
+    const styledText = `[#${colorHex}]${selectedText}[#]`
 
-    // Wrap với color tag, không ảnh hưởng đến phần còn lại
-    const styledText = `[#${colorHex}]${selectedText}[#]`;
-    skill.text = skill.text.slice(0, savedSelection.start) + styledText + skill.text.slice(savedSelection.end);
-    textarea.selectionStart = savedSelection.start;
-    textarea.selectionEnd = savedSelection.start + styledText.length;
-    textarea.focus();
+    skill.text = skill.text.slice(0, selected.start) + styledText + skill.text.slice(selected.end)
+    selected.textarea.selectionStart = selected.start
+    selected.textarea.selectionEnd = selected.start + styledText.length
+    selected.textarea.focus()
+    isCardChanged = true
+}
+
+function applyColorTag(event: Event) {
+    selectedColor.value = (event.target as HTMLInputElement).value
+    applyColorTagToSelection()
 }
 
 
@@ -559,7 +565,8 @@ onMounted(() => {
                     </select>
                     <input class="sizeInput" type="number" v-model="rcard.skillTextFontSize" min="6" max="20">
                     <span class="sizeLabel">px</span>
-                    <input type="color" @input="applyColorTag($event)" title="Bôi đen text rồi chọn màu để đổi màu đoạn đó">
+                    <input type="color" v-model="selectedColor" title="Chọn màu" />
+                    <button class="btn" @click="applyColorTagToSelection" title="Bôi đen text rồi bấm Apply">Apply</button>
                 </div>
                 <div class="row-flex-center">
                     <textarea class="skill-text" v-model="skill.text" rows="5" style="width:100%; resize:vertical; white-space: pre-wrap;"></textarea>
