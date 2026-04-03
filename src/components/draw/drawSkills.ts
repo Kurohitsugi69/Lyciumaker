@@ -7,7 +7,7 @@ import { Miscellaneous } from "./miscellaneous"
 import { applyText } from "./textstyle"
 import * as df from "../fonts/dynamicFont"
 import { CanvasTool, tempCanvas } from "../entity/CanvasTool"
-import { parseRichText } from "./draw"
+import { parseRichText, normalizeRichTextInput } from "./draw"
 
 // Vẽ một dòng kỹ năng
 function drawLine(cf: Config, cvt: CanvasTool, card: Card, line: string, fontSize: number, isItalic: boolean, lastLine: boolean, drawRatio = 0, y: number, xoff: number) {
@@ -32,23 +32,17 @@ function drawLine(cf: Config, cvt: CanvasTool, card: Card, line: string, fontSiz
     // Vẽ từng đoạn
     let currentX = 0
     for (const seg of segments) {
-        tempCvs.ctx.fillStyle = seg.color
+        let fill = seg.color
+        if (/^[0-9a-fA-F]{3,6}$/.test(fill)) {
+            fill = '#' + fill
+        } else if (!fill.startsWith('#')) {
+            // giữ nguyên nếu là tên màu hoặc rgb()
+            fill = fill
+        }
+        tempCvs.ctx.fillStyle = fill
 
         // Vẽ đoạn text này
         tempCvs.ctx.fillText(seg.text, currentX, size.y / 2)
-
-        // Xử lý vẽ đậm nếu có dấu 【 】 trong đoạn này
-        const bracketStart = seg.text.indexOf('【')
-        const bracketEnd = seg.text.indexOf('】')
-        if (bracketStart >= 0 && bracketEnd > bracketStart) {
-            // Để đơn giản, nếu đoạn này có dấu ngoặc, ta vẽ đè chữ đậm lên
-            const boldText = seg.text.slice(bracketStart, bracketEnd + 1)
-            const prefix = seg.text.slice(0, bracketStart)
-            const startX = currentX + tempCvs.ctx.measureText(prefix).width
-            tempCvs.ctx.font = 'bold ' + font
-            tempCvs.ctx.fillText(boldText, startX, size.y / 2)
-            tempCvs.ctx.font = font // Trả lại font cũ
-        }
 
         currentX += tempCvs.ctx.measureText(seg.text).width
     }
@@ -72,54 +66,79 @@ function drawLine(cf: Config, cvt: CanvasTool, card: Card, line: string, fontSiz
 
 // Vẽ và lấy chiều cao của kỹ năng
 function skillHeight(cf: Config, cvt: CanvasTool, card: Card, skill: Skill, isDraw: boolean = false, y: number, fontSize: number) {
-    let line = ''
     let height = 0
-    let numline = 0
-    const text = skill.text
+    const rawText = normalizeRichTextInput(skill.text)
+    const lines: { text: string, xoff: number }[] = []
     const yoff = fontSize * (1 + cf.skText.rowSpacing)
 
     applyText(cvt.ctx, cf.skText.textStyle)
     cvt.ctx.font = fontSize + "px " + card.skillTextFont
 
-    var xoff = 0       // Thụt lề dòng đầu
-    let drawRatio = 0  // Tỷ lệ thu phóng khi vẽ dòng đơn
-    let isPunctuation = false // Có đẩy dấu câu từ dòng tiếp theo lên không
-
-    // Tách văn bản thành các từ để ngắt dòng hợp lý cho Tiếng Việt
-    const words = text.split(' ')
+    // Tách văn bản thành đoạn (dựa vào newline), sau đó ngắt dòng theo độ rộng
+    const paragraphs = rawText.split(/\r?\n/)
     let currentLine = ''
+    let isFirstLine = true
 
-    // Tính toán độ rộng (loại bỏ thẻ màu)
     const getTextWidth = (t: string) => {
-        const cleanText = t.replace(/\[#(.*?)\]/g, '').replace(/\[#\]/g, '')
+        const cleanText = t.replace(/\[#([0-9a-fA-F]+)\]/g, '').replace(/\[#\]/g, '')
         return cvt.ctx.measureText(cleanText).width
     }
 
-    for (let i = 0; i < words.length; i++) {
-        xoff = (numline === 0) ? cf.skText.indent * fontSize : 0
-        let testLine = currentLine + (currentLine === '' ? '' : ' ') + words[i]
-        const textWidth = getTextWidth(testLine)
+    const flushCurrentLine = () => {
+        if (currentLine !== '') {
+            lines.push({ text: currentLine, xoff: isFirstLine ? cf.skText.indent * fontSize : 0 })
+            currentLine = ''
+            isFirstLine = false
+        }
+    }
 
-        if (textWidth + cf.skText.epsilon * fontSize >= cf.skText.w - xoff && currentLine !== '') {
-            if (isDraw) {
-                drawRatio = drawLine(cf, cvt, card, currentLine, fontSize, skill.isItalic, false, drawRatio, y + numline * yoff, xoff)
+    for (let pi = 0; pi < paragraphs.length; pi++) {
+        const paragraph = paragraphs[pi]
+        if (paragraph.trim() === '') {
+            flushCurrentLine()
+            // giữ 1 dòng trống
+            lines.push({ text: '', xoff: 0 })
+            continue
+        }
+
+        const words = paragraph.split(' ')
+        for (let i = 0; i < words.length; i++) {
+            const xoff = isFirstLine ? cf.skText.indent * fontSize : 0
+            const testLine = currentLine === '' ? words[i] : currentLine + ' ' + words[i]
+            const textWidth = getTextWidth(testLine)
+
+            if (textWidth + cf.skText.epsilon * fontSize >= cf.skText.w - xoff && currentLine !== '') {
+                lines.push({ text: currentLine, xoff })
+                currentLine = words[i]
+                isFirstLine = false
+            } else {
+                currentLine = testLine
             }
-            numline++
-            currentLine = words[i]
-            height = height + yoff
-            xoff = 0
-        } else {
-            currentLine = testLine
+        }
+        flushCurrentLine()
+
+        // Nếu còn đoạn tiếp, thêm dòng trống giữa đoạn
+        if (pi < paragraphs.length - 1) {
+            lines.push({ text: '', xoff: 0 })
         }
     }
 
-    // Vẽ dòng cuối cùng
-    if (currentLine != '') {
-        height = height + yoff
-        if (isDraw) {
-            drawRatio = drawLine(cf, cvt, card, currentLine, fontSize, skill.isItalic, true, drawRatio, y + numline * yoff, xoff)
+    if (lines.length === 0) {
+        return 0
+    }
+
+    height = lines.length * yoff
+
+    if (isDraw) {
+        for (let li = 0; li < lines.length; li++) {
+            const lineInfo = lines[li]
+            const lastLine = li === lines.length - 1
+            if (lineInfo.text !== '') {
+                drawLine(cf, cvt, card, lineInfo.text, fontSize, skill.isItalic, lastLine, 0, y + li * yoff, lineInfo.xoff)
+            }
         }
     }
+
     return height
 }
 

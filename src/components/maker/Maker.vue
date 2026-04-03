@@ -280,6 +280,46 @@ function copyColorTag(event: Event) {
     alert('Đã copy thẻ màu: ' + tag + '\nHãy dán vào phần văn bản!');
 }
 
+function applyColorTag(event: Event) {
+    const color = (event.target as HTMLInputElement).value;
+    const colorHex = color.replace('#', '');
+
+    // Tìm textarea đang focus (hoặc có selection gần nhất)
+    let textarea: HTMLTextAreaElement | null = null;
+    let skillIndex = -1;
+    let savedSelection = { start: 0, end: 0 };
+
+    // Kiểm tra tất cả textarea skill
+    const textareas = document.querySelectorAll('.skill-text') as NodeListOf<HTMLTextAreaElement>;
+    for (let i = 0; i < textareas.length; i++) {
+        const ta = textareas[i];
+        if (ta.selectionStart !== ta.selectionEnd) {
+            // Có selection hiện tại
+            textarea = ta;
+            skillIndex = i;
+            savedSelection = { start: ta.selectionStart, end: ta.selectionEnd };
+            break;
+        }
+    }
+
+    if (!textarea || skillIndex === -1) {
+        alert('Vui lòng bôi đen đoạn văn bản cần đổi màu!');
+        return;
+    }
+
+    const skill = rcard.value.skills[skillIndex];
+    const selectedText = skill.text.slice(savedSelection.start, savedSelection.end);
+
+    // Wrap với color tag
+    const styledText = `[#${colorHex}]${selectedText}[#]`;
+    skill.text = skill.text.slice(0, savedSelection.start) + styledText + skill.text.slice(savedSelection.end);
+
+    // Update selection và focus
+    textarea.selectionStart = savedSelection.start;
+    textarea.selectionEnd = savedSelection.start + styledText.length;
+    textarea.focus();
+}
+
 // Đảm bảo giá trị sinh lực luôn lớn hơn hoặc bằng 0
 watch(() => { return rcard.value.heart }, (n, o) => {
     rcard.value.heart = Math.max(0, rcard.value.heart)
@@ -521,7 +561,7 @@ onMounted(() => {
                     </select>
                     <input class="sizeInput" type="number" v-model="rcard.skillTextFontSize" min="6" max="20">
                     <span class="sizeLabel">px</span>
-                    <input type="color" @input="copyColorTag($event)" title="Click để lấy mã màu">
+                    <input type="color" @input="applyColorTag($event)" title="Bôi đen text rồi chọn màu để đổi màu đoạn đó">
                 </div>
                 <div class="row-flex-center">
                     <textarea class="skill-text" v-model="skill.text"></textarea>

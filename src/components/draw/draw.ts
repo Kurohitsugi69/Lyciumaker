@@ -153,25 +153,59 @@ function drawTitle(cf: Config, cvt: CanvasTool, card: Card, miscellaneous: Misce
 }
 
 // Phân tích văn bản có thẻ màu [#RRGGBB]văn bản[#]
+export function normalizeRichTextInput(text: string): string {
+    let result = text || ''
+
+    // <p style="color: red;">...</p> -> [#red]...-[#]\n
+    result = result.replace(/<p\b[^>]*style=["'][^"']*color\s*:\s*([^;"']+)[^"']*["'][^>]*>([\s\S]*?)<\/p>/gi,
+        (_, color, inner) => `[#${color.trim()}]${inner.trim()}[#]\n`)
+
+    // <p>...</p> không style -> chuyển thành xuống dòng
+    result = result.replace(/<p\b[^>]*>([\s\S]*?)<\/p>/gi,
+        (_, inner) => `${inner.trim()}\n`)
+
+    // <span style="color: red;">...</span> -> [#red]...-[#]
+    result = result.replace(/<span\b[^>]*style=["'][^"']*color\s*:\s*([^;"']+)[^"']*["'][^>]*>([\s\S]*?)<\/span>/gi,
+        (_, color, inner) => `[#${color.trim()}]${inner}[#]`)
+
+    // Loại bỏ các thẻ HTML khác để tránh phức tạp khi tính toán width
+    result = result.replace(/<[^>]+>/g, '')
+
+    return result
+}
+
 export function parseRichText(text: string, defaultColor: string) {
+    const cleanDefault = normalizeColor(defaultColor)
     const result: { text: string, color: string }[] = []
-    const regex = /\[#(.*?)\](.*?)\[#\]/g
+    const regex = /\[#([0-9a-fA-F]+)\](.*?)\[#\]/g
     let lastIndex = 0
     let match
 
     while ((match = regex.exec(text)) !== null) {
         if (match.index > lastIndex) {
-            result.push({ text: text.substring(lastIndex, match.index), color: defaultColor })
+            result.push({ text: text.substring(lastIndex, match.index), color: cleanDefault })
         }
-        result.push({ text: match[2], color: match[1] })
+        result.push({ text: match[2], color: normalizeColor(match[1]) })
         lastIndex = regex.lastIndex
     }
 
     if (lastIndex < text.length) {
-        result.push({ text: text.substring(lastIndex), color: defaultColor })
+        result.push({ text: text.substring(lastIndex), color: cleanDefault })
     }
 
-    return result.length > 0 ? result : [{ text, color: defaultColor }]
+    return result.length > 0 ? result : [{ text, color: cleanDefault }]
+}
+
+function normalizeColor(color: string): string {
+    if (!color) return 'black'
+    const c = color.trim()
+    if (c.startsWith('#')) {
+        const hex = c.slice(1)
+        if (/^[0-9a-fA-F]{3,6}$/.test(hex)) return hex
+        return c
+    }
+    if (/^[0-9a-fA-F]{3,6}$/.test(c)) return c
+    return c
 }
 
 // Vẽ tên võ tướng theo từng từ
