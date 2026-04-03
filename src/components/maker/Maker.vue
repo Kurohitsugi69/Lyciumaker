@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { onMounted, Ref, ref, watch } from 'vue';
+import { onMounted, Ref, ref, watch, nextTick } from 'vue';
 import { miscellaneous } from '../draw/miscellaneous';
 import * as dw from '../draw/draw'
 import { drawSkills } from '../draw/drawSkills'
@@ -284,17 +284,15 @@ function applyColorTag(event: Event) {
     const color = (event.target as HTMLInputElement).value;
     const colorHex = color.replace('#', '');
 
-    // Tìm textarea đang focus (hoặc có selection gần nhất)
+    // Tìm textarea có selection đang chọn
     let textarea: HTMLTextAreaElement | null = null;
     let skillIndex = -1;
     let savedSelection = { start: 0, end: 0 };
 
-    // Kiểm tra tất cả textarea skill
     const textareas = document.querySelectorAll('.skill-text') as NodeListOf<HTMLTextAreaElement>;
     for (let i = 0; i < textareas.length; i++) {
         const ta = textareas[i];
         if (ta.selectionStart !== ta.selectionEnd) {
-            // Có selection hiện tại
             textarea = ta;
             skillIndex = i;
             savedSelection = { start: ta.selectionStart, end: ta.selectionEnd };
@@ -310,15 +308,15 @@ function applyColorTag(event: Event) {
     const skill = rcard.value.skills[skillIndex];
     const selectedText = skill.text.slice(savedSelection.start, savedSelection.end);
 
-    // Wrap với color tag
+    // Wrap với color tag, không ảnh hưởng đến phần còn lại
     const styledText = `[#${colorHex}]${selectedText}[#]`;
     skill.text = skill.text.slice(0, savedSelection.start) + styledText + skill.text.slice(savedSelection.end);
-
-    // Update selection và focus
     textarea.selectionStart = savedSelection.start;
     textarea.selectionEnd = savedSelection.start + styledText.length;
     textarea.focus();
 }
+
+
 
 // Đảm bảo giá trị sinh lực luôn lớn hơn hoặc bằng 0
 watch(() => { return rcard.value.heart }, (n, o) => {
@@ -564,7 +562,7 @@ onMounted(() => {
                     <input type="color" @input="applyColorTag($event)" title="Bôi đen text rồi chọn màu để đổi màu đoạn đó">
                 </div>
                 <div class="row-flex-center">
-                    <textarea class="skill-text" v-model="skill.text"></textarea>
+                    <textarea class="skill-text" v-model="skill.text" rows="5" style="width:100%; resize:vertical; white-space: pre-wrap;"></textarea>
                 </div>
             </div>
         </div>

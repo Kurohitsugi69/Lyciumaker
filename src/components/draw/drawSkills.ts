@@ -10,14 +10,27 @@ import { CanvasTool, tempCanvas } from "../entity/CanvasTool"
 import { parseRichText, normalizeRichTextInput } from "./draw"
 
 // Vẽ một dòng kỹ năng
-function drawLine(cf: Config, cvt: CanvasTool, card: Card, line: string, fontSize: number, isItalic: boolean, lastLine: boolean, drawRatio = 0, y: number, xoff: number) {
+function drawLine(
+    cf: Config,
+    cvt: CanvasTool,
+    card: Card,
+    line: string,
+    fontSize: number,
+    isItalic: boolean,
+    lastLine: boolean,
+    drawRatio = 0,
+    y: number,
+    xoff: number
+) {
     let font = fontSize + "px " + card.skillTextFont
     font = isItalic ? 'italic ' + font : font
 
-    // Phân tích text giàu màu sắc [#RRGGBB]văn bản[#]
-    const segments = parseRichText(line, cf.skText.textStyle.fillStyle as string || 'black')
+    // Phân tích rich text màu: [#RRGGBB]text[#]
+    const segments = parseRichText(
+        line,
+        (cf.skText.textStyle.fillStyle as string) || 'black'
+    )
 
-    // Tính tổng chiều rộng
     let w1 = 0
     cvt.ctx.font = font
     for (const seg of segments) {
@@ -29,98 +42,117 @@ function drawLine(cf: Config, cvt: CanvasTool, card: Card, line: string, fontSiz
     tempCvs.ctx.font = font
     tempCvs.ctx.textBaseline = 'middle'
 
-    // Vẽ từng đoạn
     let currentX = 0
     for (const seg of segments) {
         let fill = seg.color
         if (/^[0-9a-fA-F]{3,6}$/.test(fill)) {
             fill = '#' + fill
         } else if (!fill.startsWith('#')) {
-            // giữ nguyên nếu là tên màu hoặc rgb()
             fill = fill
         }
+
         tempCvs.ctx.fillStyle = fill
-
-        // Vẽ đoạn text này
         tempCvs.ctx.fillText(seg.text, currentX, size.y / 2)
-
         currentX += tempCvs.ctx.measureText(seg.text).width
     }
 
-    // Xác định chiều rộng
-    let w2 = cf.skText.w - xoff  // Chiều rộng vẽ
-    w2 = lastLine ? w1 : w2
-    w2 = lastLine && drawRatio ? w1 * drawRatio : w2
     const d = {
         x: cf.skText.x1 + xoff,
         y: y - size.y / 2,
-        w: w2,
+        w: w1,
         h: size.y
     }
 
-    // 绘制
     cvt.ctx.drawImage(tempCvs.canvas, d.x, d.y, d.w, d.h)
 
-    return w2 / w1
+    return 1
 }
 
 // Vẽ và lấy chiều cao của kỹ năng
-function skillHeight(cf: Config, cvt: CanvasTool, card: Card, skill: Skill, isDraw: boolean = false, y: number, fontSize: number) {
+function skillHeight(
+    cf: Config,
+    cvt: CanvasTool,
+    card: Card,
+    skill: Skill,
+    isDraw: boolean = false,
+    y: number,
+    fontSize: number
+) {
     let height = 0
     const rawText = normalizeRichTextInput(skill.text)
-    const lines: { text: string, xoff: number }[] = []
-    const yoff = fontSize * (1 + cf.skText.rowSpacing)
+    const lines: { text: string; xoff: number }[] = []
+    const rowSpacing = Math.max(0, Math.min(cf.skText.rowSpacing, 0.15))
+    const yoff = fontSize * (1 + rowSpacing)
 
     applyText(cvt.ctx, cf.skText.textStyle)
     cvt.ctx.font = fontSize + "px " + card.skillTextFont
 
-    // Tách văn bản thành đoạn (dựa vào newline), sau đó ngắt dòng theo độ rộng
+    // Tách theo newline
     const paragraphs = rawText.split(/\r?\n/)
+
     let currentLine = ''
-    let isFirstLine = true
+    let isFirstVisualLine = true
+
+    const stripColorTags = (t: string) => {
+        return t
+            .replace(/\[#([0-9a-fA-F]{3,8})\]/g, '')
+            .replace(/\[#\]/g, '')
+    }
 
     const getTextWidth = (t: string) => {
-        const cleanText = t.replace(/\[#([0-9a-fA-F]+)\]/g, '').replace(/\[#\]/g, '')
-        return cvt.ctx.measureText(cleanText).width
+        return cvt.ctx.measureText(stripColorTags(t)).width
+    }
+
+    const pushLine = (text: string, xoff: number) => {
+        lines.push({ text, xoff })
     }
 
     const flushCurrentLine = () => {
         if (currentLine !== '') {
-            lines.push({ text: currentLine, xoff: isFirstLine ? cf.skText.indent * fontSize : 0 })
+            pushLine(
+                currentLine,
+                isFirstVisualLine ? cf.skText.indent * fontSize : 0
+            )
             currentLine = ''
-            isFirstLine = false
+            isFirstVisualLine = false
         }
     }
 
     for (let pi = 0; pi < paragraphs.length; pi++) {
         const paragraph = paragraphs[pi]
-        if (paragraph.trim() === '') {
+
+        if (paragraph === '') {
             flushCurrentLine()
-            // giữ 1 dòng trống
-            lines.push({ text: '', xoff: 0 })
             continue
         }
 
         const words = paragraph.split(' ')
+
         for (let i = 0; i < words.length; i++) {
-            const xoff = isFirstLine ? cf.skText.indent * fontSize : 0
-            const testLine = currentLine === '' ? words[i] : currentLine + ' ' + words[i]
+            const word = words[i]
+
+            //tránh double-space làm vỡ layout
+            if (word === '') {
+                continue
+            }
+
+            const xoff = isFirstVisualLine ? cf.skText.indent * fontSize : 0
+            const testLine = currentLine === '' ? word : currentLine + ' ' + word
             const textWidth = getTextWidth(testLine)
 
-            if (textWidth + cf.skText.epsilon * fontSize >= cf.skText.w - xoff && currentLine !== '') {
-                lines.push({ text: currentLine, xoff })
-                currentLine = words[i]
-                isFirstLine = false
+            if (
+                textWidth + cf.skText.epsilon * fontSize >= cf.skText.w - xoff &&
+                currentLine !== ''
+            ) {
+                pushLine(currentLine, xoff)
+                currentLine = word
+                isFirstVisualLine = false
             } else {
                 currentLine = testLine
             }
         }
-        flushCurrentLine()
 
-        // Nếu còn đoạn tiếp, thêm dòng trống giữa đoạn
-        if (pi < paragraphs.length - 1) {
-            lines.push({ text: '', xoff: 0 })
-        }
+        flushCurrentLine()
     }
 
     if (lines.length === 0) {
@@ -133,8 +165,20 @@ function skillHeight(cf: Config, cvt: CanvasTool, card: Card, skill: Skill, isDr
         for (let li = 0; li < lines.length; li++) {
             const lineInfo = lines[li]
             const lastLine = li === lines.length - 1
+
             if (lineInfo.text !== '') {
-                drawLine(cf, cvt, card, lineInfo.text, fontSize, skill.isItalic, lastLine, 0, y + li * yoff, lineInfo.xoff)
+                drawLine(
+                    cf,
+                    cvt,
+                    card,
+                    lineInfo.text,
+                    fontSize,
+                    skill.isItalic,
+                    lastLine,
+                    0,
+                    y + li * yoff,
+                    lineInfo.xoff
+                )
             }
         }
     }
