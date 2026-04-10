@@ -3,6 +3,7 @@
 import { onMounted, Ref, ref } from 'vue'
 import DrawBoard from './components/puzzle/DrawBoard.vue'
 import Maker from './components/maker/Maker.vue'
+import PrintSheet from './components/print/PrintSheet.vue'
 
 import { refChars, jsonInfo } from './components/puzzle/chars';
 
@@ -11,7 +12,8 @@ import CharPreview from './components/puzzle/CharPreview.vue';
 
 enum Page {
   Maker,
-  Puzzle
+  Puzzle,
+  Print
 }
 
 const page: Ref<Page> = ref(Page.Maker)
@@ -38,6 +40,9 @@ window.onbeforeunload = (event: any) => {
     </div>
     <div class="nav-btn" @click="page = Page.Puzzle">
       <div>Ghép chữ</div>
+    </div>
+    <div class="nav-btn" @click="page = Page.Print">
+      <div>Print</div>
     </div>
     <!--
     <div class="nav-btn" @click="window.open('https://www.bilibili.com/video/BV19P4y1j7n6/')">
@@ -75,6 +80,10 @@ window.onbeforeunload = (event: any) => {
 
     <div v-show="page === Page.Puzzle">
       <DrawBoard :fragments="fragments"></DrawBoard>
+    </div>
+
+    <div v-show="page === Page.Print">
+      <PrintSheet></PrintSheet>
     </div>
   </div>
 
