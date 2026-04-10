@@ -1,3 +1,22 @@
+# HienNH Note:
+1. Tải và cài đặt NodeJs: https://nodejs.org/en/download
+2. Tải folder dự án:
+   <img width="961" height="613" alt="image" src="https://github.com/user-attachments/assets/15ca21b5-56ea-4b25-8529-b1dfb0977d34" />
+3. Giải nén, vào trong folder copy path của folder (Vd: C:\Users\PC\Downloads\Lyciumaker-master)
+4. Mở Command và nhập cd {path folder} (VD: cd C:\Users\PC\Downloads\Lyciumaker-master) và Enter
+    <img width="1408" height="630" alt="image" src="https://github.com/user-attachments/assets/991d6a43-eacf-40c5-ae2c-6e526a9dfb8a" />
+5. Nhập như sau:
+```bash
+npm install
+npm run dev
+```
+6. Sau đó trên Command sẽ hiện như này
+
+   <img width="359" height="122" alt="image" src="https://github.com/user-attachments/assets/a785a9db-0a21-458b-8449-d5ac0144357d" />
+8. Truy cập http://localhost:5173/ là được
+
+
+
 # Lycium - Trình tạo thẻ Tam Quốc Sát trực tuyến
 
 Vui lòng truy cập [Lycium Trình tạo thẻ Tam Quốc Sát](https://catscarf.github.io/) để sử dụng ứng dụng này.
