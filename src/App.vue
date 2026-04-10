@@ -39,6 +39,7 @@ window.onbeforeunload = (event: any) => {
     <div class="nav-btn" @click="page = Page.Puzzle">
       <div>Ghép chữ</div>
     </div>
+    <!--
     <div class="nav-btn" @click="window.open('https://www.bilibili.com/video/BV19P4y1j7n6/')">
       <div>Phản hồi</div>
     </div>
@@ -48,9 +49,10 @@ window.onbeforeunload = (event: any) => {
     <div class="nav-btn" @click="window.open('https://github.com/CatScarf/Lyciumaker')">
       <div>Github</div>
     </div>
+    -->
   </div>
 
-
+<!--
   <div style="padding: 5px; background: #33cc66; font-size: 10px; text-align: center; color: white">
     Cám ơn mọi người đã quyên góp, hiện áp lực kinh tế của máy chủ đã giảm đáng kể, bạn vẫn có thể
     <a href="https://www.bilibili.com/video/BV19P4y1j7n6/" style="display: inline-block; color: white" target="_blank">
@@ -58,6 +60,7 @@ window.onbeforeunload = (event: any) => {
     </a>
     để tiếp sức cho trang web. Mọi khoản đóng góp sẽ được dùng cho chi phí máy chủ. Chi tiết thu chi vui lòng nhấp vào "Thu chi" trên thanh điều hướng.
   </div>
+-->
 
   <div id="chars" class="row-flex-center">
     <div class="char card" v-for="char in refChars.jsons" @click="fragments.fromjson(char)"
@@ -79,6 +82,7 @@ window.onbeforeunload = (event: any) => {
     <CharPreview class="relative-center" width='256' :subcvt="refHoverFgs.draw()"></CharPreview>
   </div>
 
+  <!--
   <div id="bottomBar" style="margin-top:20px; margin-bottom:20px; padding: 5px 5px; background: #d5d5d5;">
     <a class="bottomInfo" href="http://beian.miit.gov.cn/" target="_blank">吉ICP备2022000349号-1</a>
     &nbsp&nbsp
@@ -86,6 +90,7 @@ window.onbeforeunload = (event: any) => {
     <a class="bottomInfo" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=22010402001039"
       target="_blank">Giấy phép mạng công cộng Cát Lâm số 22010402001039</a>
   </div>
+  -->
 </template>
 
 <style scoped>
