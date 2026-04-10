@@ -52,7 +52,8 @@ export const Power: { [key: string]: string } = {
     'Ngô': 'wu',
     'Quần': 'qun',
     'Thần': 'shen',
-    'Tấn': 'jin'
+    'Tấn': 'jin',
+    'Dã': 'ye'
 }
 
 // Khung 2 thế lực: key = tên hiển thị, value = { file: tên file ảnh, primaryPower: thế lực ưu tiên lấy màu }

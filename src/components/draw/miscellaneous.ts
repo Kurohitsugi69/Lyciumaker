@@ -13,7 +13,8 @@ export class Miscellaneous {
         'wu': "#d6e3bf",
         'qun': "#d2cbc8",
         'shen': "#c2bd64",
-        'jin': "#e3b5f1"
+        'jin': "#e3b5f1",
+        'ye': "#e3b5f1"
     }
 
     titleLordColor: { [key: string]: string } = {
@@ -22,7 +23,8 @@ export class Miscellaneous {
         'wu': 'rgb(62,109,31)',
         'qun': 'rgb(118,118,118)',
         'shen': "rgb(255, 255, 0)",
-        'jin': 'rgb(104,19,129)'  // Cần sửa
+        'jin': 'rgb(104,19,129)',
+        'ye': 'rgb(104,19,129)'
     }
 
     skillBox: { [key: string]: number[] } = {
@@ -32,13 +34,14 @@ export class Miscellaneous {
         'qun': [100, 350, 200, 100],
         'shen': [100, 450, 200, 100],
         'jin': [100, 550, 200, 100],
+        'ye': [100, 550, 200, 100]
     }
 
     constructor(url: string) {
         this.img = new LazyImage(url)
-        const powers = 'wei,shu,wu,qun,shen,jin'.split(',')
+        const powers = 'wei,shu,wu,qun,shen,jin,ye'.split(',')
         const sxs = [350, 450]
-        const sys = [50, 150, 250, 355, 450, 550]
+        const sys = [50, 150, 250, 355, 450, 550, 550]
         for (let i = 0; i < powers.length; i++) {
             const name1 = `${powers[i]}HeartS`
             const value1 = [sxs[0], sys[i], 100, 100]
