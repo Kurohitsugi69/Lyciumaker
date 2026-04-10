@@ -34,6 +34,10 @@ export interface SerializedProject {
         // Text content
         title: string
         name: string
+        titleX: number
+        titleY: number
+        nameX: number
+        nameY: number
         
         // Fonts
         titleFont: string
@@ -145,6 +149,10 @@ export async function serializeCard(card: Card): Promise<SerializedProject> {
             
             title: card.title,
             name: card.name,
+            titleX: card.titleX,
+            titleY: card.titleY,
+            nameX: card.nameX,
+            nameY: card.nameY,
             
             titleFont: card.titleFont,
             titleFontSize: card.titleFontSize,
@@ -200,6 +208,10 @@ export async function deserializeCard(projectJson: SerializedProject, card: Card
     
     card.title = data.title
     card.name = data.name
+    card.titleX = data.titleX ?? card.titleX
+    card.titleY = data.titleY ?? card.titleY
+    card.nameX = data.nameX ?? card.nameX
+    card.nameY = data.nameY ?? card.nameY
     
     card.titleFont = data.titleFont
     card.titleFontSize = data.titleFontSize

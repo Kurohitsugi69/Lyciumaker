@@ -100,6 +100,12 @@ export class Card {
     title: string = 'Danh hiệu chưa rõ' // Danh hiệu
     name: string = 'Lưu Bị'          // Tên võ tướng
 
+    // Vị trí linh hoạt của danh hiệu và tên võ tướng
+    titleX: number = 59
+    titleY: number = 110
+    nameX: number = 340
+    nameY: number = 226
+
     // Font và cỡ chữ tùy chỉnh
     titleFont: string = 'NV_DanhHieu'
     titleFontSize: number = 24

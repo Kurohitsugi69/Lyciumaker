@@ -221,7 +221,7 @@ function loop() {
         dw.drawComboBox(config, rcvt.value, rcard.value, miscellaneous, bottomy)
         // Vẽ danh hiệu và tên võ tướng
         stopWatch.lap()
-        dw.drawTitleName(config, rcvt.value, rcard.value, miscellaneous, bottomy)
+        dw.drawTitleName(config, rcvt.value, rcard.value, miscellaneous)
         // 绘制底部信息
         stopWatch.lap()
         dw.drawBottom(config, rcvt.value, rcard.value)
@@ -458,6 +458,11 @@ onMounted(() => {
                 <div class="translated" v-show="rcard.isTranslate">{{ translate(rcard.title) }}</div>
             </div>
             <div class="row-flex-center">
+                <div class="x4">Vị trí</div>
+                X: <input class="textInput" type="number" v-model="rcard.titleX">
+                Y: <input class="textInput" type="number" v-model="rcard.titleY">
+            </div>
+            <div class="row-flex-center">
                 <select class="fontSelect" v-model="rcard.titleFont">
                     <option v-for="(val, name) in FONTS" :value="val">{{ name }}</option>
                 </select>
@@ -470,6 +475,11 @@ onMounted(() => {
                 <div class="x4">Võ tướng</div>
                 <input class="textInput" v-model="rcard.name">
                 <div class="translated" v-show="rcard.isTranslate">{{ translate(rcard.name) }}</div>
+            </div>
+            <div class="row-flex-center">
+                <div class="x4">Vị trí</div>
+                X: <input class="textInput" type="number" v-model="rcard.nameX">
+                Y: <input class="textInput" type="number" v-model="rcard.nameY">
             </div>
             <div class="row-flex-center">
                 <select class="fontSelect" v-model="rcard.nameFont">

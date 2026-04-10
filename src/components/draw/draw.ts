@@ -11,6 +11,7 @@ import { Power, DualFrame } from "../maker/card";
 import { refChars } from '../puzzle/chars'
 import { Fragments } from "../puzzle/fragment";
 import { Vector } from "../entity/Vector";
+import { Rect } from "../entity/Rect";
 
 import { Config } from '../config/config'
 import { applyText } from './textstyle'
@@ -134,22 +135,38 @@ function drawTitleChar(cvt: CanvasTool, card: Card, miscellaneous: Miscellaneous
 }
 
 // Vẽ danh hiệu võ tướng (bên trái, mỗi TỪ một dòng)
-function drawTitle(cf: Config, cvt: CanvasTool, card: Card, miscellaneous: Miscellaneous, y1: number, y2: number) {
-    const x1 = card.power === 'shen' ? cf.titleName.shenx1 : cf.titleName.x1
+function drawTitle(cf: Config, cvt: CanvasTool, card: Card, miscellaneous: Miscellaneous) {
+    const x1 = card.titleX
     const text = card.isTranslate ? translate(card.title) : card.title
     const words = text.split(' ').filter((w: string) => w.length > 0)
     if (words.length === 0) return
 
     const fontSize = card.titleFontSize
-    // Khoảng cách dòng: ưu tiên vừa khít vùng, nhưng không lớn hơn 1.4 * fontSize
-    const availableSpace = y2 - y1
-    let yoff = Math.min(availableSpace / words.length, fontSize * 1.4)
-    let ytop = (availableSpace - yoff * (words.length - 1)) / 2
+    const yoff = fontSize * 1.25
+    const ytop = fontSize / 2
 
     for (let i = 0; i < words.length; i++) {
-        const yi = y1 + ytop + yoff * i
+        const yi = card.titleY + ytop + yoff * i
         drawTitleChar(cvt, card, miscellaneous, x1, yi, fontSize, words[i])
     }
+}
+
+export function getTitleRect(cvt: CanvasTool, card: Card) {
+    const text = card.isTranslate ? translate(card.title) : card.title
+    const words = text.split(' ').filter((w: string) => w.length > 0)
+    if (words.length === 0) return new Rect(card.titleX, card.titleY, 0, 0)
+
+    const fontSize = card.titleFontSize
+    const yoff = fontSize * 1.25
+    let maxWidth = 0
+    cvt.ctx.font = (card.isTitleBold ? 'bold ' : '') + fontSize + "px " + card.titleFont
+    for (const word of words) {
+        const width = cvt.ctx.measureText(word).width
+        maxWidth = Math.max(maxWidth, width)
+    }
+    const width = maxWidth + 18
+    const height = yoff * words.length
+    return new Rect(card.titleX - width / 2, card.titleY, width, height)
 }
 
 // Phân tích văn bản có thẻ màu [#RRGGBB]văn bản[#]
@@ -235,35 +252,45 @@ function drawNameWord(cvt: CanvasTool, x: number, y: number, fontSize: number, w
 }
 
 // Vẽ tên võ tướng (bên phải, mỗi TỪ một dòng)
-function drawName(cf: Config, cvt: CanvasTool, card: Card, y2: number, y3: number) {
-    const x1 = card.power === 'shen' ? cf.titleName.shenx1 : cf.titleName.x2
+function drawName(cf: Config, cvt: CanvasTool, card: Card) {
+    const x1 = card.nameX
     const text = card.isTranslate ? translate(card.name) : card.name
     const words = text.split(' ').filter((w: string) => w.length > 0)
     if (words.length === 0) return
 
     const fontSize = card.nameFontSize
-    const availableSpace = y3 - y2
-    // Khoảng cách giữa các dòng: ưu tiên vừa khít vùng
-    let yoff = Math.min(availableSpace / words.length, fontSize * 1.2)
-    let ytop = (availableSpace - yoff * (words.length - 1)) / 2
+    const yoff = fontSize * 1.2
+    const ytop = fontSize / 2
 
     for (let i = 0; i < words.length; i++) {
-        const y = y2 + ytop + yoff * i
+        const y = card.nameY + ytop + yoff * i
         drawNameWord(cvt, x1, y, fontSize, words[i], card.nameFont, card.nameColor)
     }
 }
 
+export function getNameRect(cvt: CanvasTool, card: Card) {
+    const text = card.isTranslate ? translate(card.name) : card.name
+    const words = text.split(' ').filter((w: string) => w.length > 0)
+    if (words.length === 0) return new Rect(card.nameX, card.nameY, 0, 0)
+
+    const fontSize = card.nameFontSize
+    const yoff = fontSize * 1.2
+    let maxWidth = 0
+    cvt.ctx.font = fontSize + "px " + card.nameFont
+    for (const word of words) {
+        const displayText = word.replace(/\[#(.*?)\]/g, '').replace(/\[#\]/g, '')
+        const width = cvt.ctx.measureText(displayText).width
+        maxWidth = Math.max(maxWidth, width)
+    }
+    const width = maxWidth + 18
+    const height = yoff * words.length
+    return new Rect(card.nameX - width / 2, card.nameY, width, height)
+}
+
 // Vẽ danh hiệu và tên võ tướng
-export function drawTitleName(cf: Config, cvt: CanvasTool, card: Card, miscellaneous: Miscellaneous, bottomy: number) {
-    const y1 = cf.titleName.y1
-    const y3 = bottomy + cf.titleName.y3off
-    const y2 = y1 + (y3 - y1) * cf.titleName.ratio
-
-    // Vẽ danh hiệu (bên trái)
-    drawTitle(cf, cvt, card, miscellaneous, y1, y2)
-
-    // Vẽ tên võ tướng (bên phải)
-    drawName(cf, cvt, card, y2, y3)
+export function drawTitleName(cf: Config, cvt: CanvasTool, card: Card, miscellaneous: Miscellaneous) {
+    drawTitle(cf, cvt, card, miscellaneous)
+    drawName(cf, cvt, card)
 }
 
 // Vẽ khung hợp kỹ
