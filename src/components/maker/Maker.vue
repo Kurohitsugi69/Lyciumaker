@@ -425,6 +425,7 @@ onMounted(() => {
             </div>
 
             <hr class="cardHr">
+            <!--
             <div class="row-flex-center">
                 <div class="row-flex-center x4">
                     <input type="checkbox" v-model="rcard.isProducer">
@@ -446,6 +447,7 @@ onMounted(() => {
                 </div>
                 <input class="textInput" :class="{ hidden: !rcard.isCardNum }" v-model="rcard.cardNum">
             </div>
+            -->
 
             <hr class="cardHr">
             <div class="row-flex-center">
@@ -489,9 +491,11 @@ onMounted(() => {
                 <span class="sizeLabel">px</span>
                 <input type="color" v-model="rcard.nameColor" title="Chọn màu tên võ tướng">
             </div>
+            <!--
             <div class="row-flex-center">
                 <div v-show="missing.length > 0" class="tip">Phát hiện thiếu chữ ({{ missing }}), khuyên dùng tính năng ghép chữ</div>
             </div>
+            -->
             <div class="row-flex-center">
                 <div class="x4">Hợp Kỹ</div>
                 <input class="textInput" v-model="rcard.comboText" placeholder="Ví dụ: Khổng Minh | Gia Cát Lượng">
@@ -502,6 +506,7 @@ onMounted(() => {
                 </select>
                 <input class="sizeInput" type="number" v-model="rcard.comboFontSize" min="8" max="40">
                 <span class="sizeLabel">px</span>
+                <input type="color" v-model="rcard.comboColor" title="Chọn màu chữ ComboBox">
             </div>
 
             <hr class="cardHr">

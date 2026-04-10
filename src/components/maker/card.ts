@@ -119,6 +119,7 @@ export class Card {
     skillTextFontSize: number = 10
     comboFont: string = 'NV_TenKyNang'
     comboFontSize: number = 14
+    comboColor: string = '#ffe7b4'
 
     power: string = Power['Thục']      // Thế lực
     isLord: boolean = false        // Có phải chúa công không
