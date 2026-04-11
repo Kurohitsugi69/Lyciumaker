@@ -52,7 +52,8 @@ export const Power: { [key: string]: string } = {
     'Ngô': 'wu',
     'Quần': 'qun',
     'Thần': 'shen',
-    'Tấn': 'jin'
+    'Tấn': 'jin',
+    'Dã': 'ye'
 }
 
 // Khung 2 thế lực: key = tên hiển thị, value = { file: tên file ảnh, primaryPower: thế lực ưu tiên lấy màu }
@@ -119,6 +120,7 @@ export class Card {
     skillTextFontSize: number = 10
     comboFont: string = 'NV_TenKyNang'
     comboFontSize: number = 14
+    comboColor: string = '#ffe7b4'
 
     power: string = Power['Thục']      // Thế lực
     isLord: boolean = false        // Có phải chúa công không

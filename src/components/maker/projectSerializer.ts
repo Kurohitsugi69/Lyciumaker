@@ -52,6 +52,7 @@ export interface SerializedProject {
         skillTextFontSize: number
         comboFont: string
         comboFontSize: number
+        comboColor: string
         
         // Power and traits
         power: string
@@ -166,6 +167,7 @@ export async function serializeCard(card: Card): Promise<SerializedProject> {
             skillTextFontSize: card.skillTextFontSize,
             comboFont: card.comboFont,
             comboFontSize: card.comboFontSize,
+            comboColor: card.comboColor,
             
             power: card.power,
             isLord: card.isLord,
@@ -225,6 +227,7 @@ export async function deserializeCard(projectJson: SerializedProject, card: Card
     card.skillTextFontSize = data.skillTextFontSize
     card.comboFont = data.comboFont
     card.comboFontSize = data.comboFontSize
+    card.comboColor = data.comboColor ?? card.comboColor
     
     card.power = data.power
     card.isLord = data.isLord

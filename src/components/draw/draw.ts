@@ -308,14 +308,14 @@ export function drawComboBox(cf: Config, cvt: CanvasTool, card: Card, miscellane
     const boxWidth = textWidth + padding * 4
     const boxHeight = fontSize + padding * 2
     // Canh phải: cách mép phải 15px
-    const rightMargin = 15
+    const rightMargin = 35
     const boxX = cvt.logicSize.x - boxWidth - rightMargin
     const boxY = skillTopy - boxHeight - 4
 
     // Vẽ nền hộp
     const effectivePower = miscellaneous.getEffectivePower(card)
     const color = miscellaneous.getColor(effectivePower)
-    cvt.ctx.fillStyle = color + 'B3'
+    cvt.ctx.fillStyle = color
     cvt.ctx.beginPath()
     const r = cf.comboBox.cornerRadius
     cvt.ctx.moveTo(boxX + r, boxY)
@@ -331,13 +331,14 @@ export function drawComboBox(cf: Config, cvt: CanvasTool, card: Card, miscellane
     cvt.ctx.fill()
 
     // Vẽ viền
-    cvt.ctx.strokeStyle = 'rgba(255, 220, 150, 0.6)'
+    cvt.ctx.strokeStyle = miscellaneous.getColor(effectivePower)
     cvt.ctx.lineWidth = 1.5
     cvt.ctx.stroke()
 
     // Vẽ text (canh giữa trong hộp)
     cvt.ctx.font = fontSize + 'px ' + card.comboFont
     applyText(cvt.ctx, cf.comboBox.textStyle)
+    cvt.ctx.fillStyle = card.comboColor || cvt.ctx.fillStyle
     cvt.ctx.fillText(text, boxX + boxWidth / 2, boxY + boxHeight / 2)
 }
 
