@@ -38,13 +38,13 @@ window.onbeforeunload = (event: any) => {
     <div class="nav-btn" @click="page = Page.Maker">
       <div>Tạo thẻ</div>
     </div>
-    <div class="nav-btn" @click="page = Page.Puzzle">
-      <div>Ghép chữ</div>
-    </div>
     <div class="nav-btn" @click="page = Page.Print">
       <div>Print</div>
     </div>
     <!--
+    <div class="nav-btn" @click="page = Page.Puzzle">
+      <div>Ghép chữ</div>
+    </div>
     <div class="nav-btn" @click="window.open('https://www.bilibili.com/video/BV19P4y1j7n6/')">
       <div>Phản hồi</div>
     </div>

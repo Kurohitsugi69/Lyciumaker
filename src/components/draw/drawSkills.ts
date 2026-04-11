@@ -221,7 +221,7 @@ function drawCornerRect(cvt: CanvasTool, rect: Rect, corner: number, isFill = fa
 function drawSkillBackground(cf: Config, cvt: CanvasTool, card: Card, miscellaneous: Miscellaneous, y1: number) {
     const alpha = transColor(cf.skBg.alpha)  // Độ trong suốt
     const effectivePower = miscellaneous.getEffectivePower(card)
-    const color = miscellaneous.getColor(effectivePower) + alpha  // Màu sắc
+    const color = miscellaneous.getColor(effectivePower)  // + alpha Màu sắc
 
     // Tọa độ 4 góc
     const height = cf.skText.y2 - y1

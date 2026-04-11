@@ -294,7 +294,33 @@ export function drawTitleName(cf: Config, cvt: CanvasTool, card: Card, miscellan
 }
 
 // Vẽ khung hợp kỹ
-export function drawComboBox(cf: Config, cvt: CanvasTool, card: Card, miscellaneous: Miscellaneous, skillTopy: number) {
+function darkenHexColor(hex: string, amount: number): string {
+    hex = hex.replace('#', '')
+
+    // hỗ trợ cả #RGB
+    if (hex.length === 3) {
+        hex = hex.split('').map(ch => ch + ch).join('')
+    }
+
+    const r = Math.max(0, parseInt(hex.slice(0, 2), 16) - amount)
+    const g = Math.max(0, parseInt(hex.slice(2, 4), 16) - amount)
+    const b = Math.max(0, parseInt(hex.slice(4, 6), 16) - amount)
+
+    return (
+        '#' +
+        r.toString(16).padStart(2, '0') +
+        g.toString(16).padStart(2, '0') +
+        b.toString(16).padStart(2, '0')
+    )
+}
+
+export function drawComboBox(
+    cf: Config,
+    cvt: CanvasTool,
+    card: Card,
+    miscellaneous: Miscellaneous,
+    skillTopy: number
+) {
     if (!card.comboText || card.comboText.trim() === '') return
 
     const text = card.comboText
@@ -307,17 +333,23 @@ export function drawComboBox(cf: Config, cvt: CanvasTool, card: Card, miscellane
     const textWidth = cvt.ctx.measureText(text).width
     const boxWidth = textWidth + padding * 4
     const boxHeight = fontSize + padding * 2
-    // Canh phải: cách mép phải 15px
-    const rightMargin = 35
+
+    const rightMargin = 40
     const boxX = cvt.logicSize.x - boxWidth - rightMargin
     const boxY = skillTopy - boxHeight - 4
 
-    // Vẽ nền hộp
     const effectivePower = miscellaneous.getEffectivePower(card)
-    const color = miscellaneous.getColor(effectivePower)
-    cvt.ctx.fillStyle = color
-    cvt.ctx.beginPath()
+    const baseColor = miscellaneous.getColor(effectivePower)
+
+    // nền sáng hơn / giữ màu gốc
+    const fillColor = baseColor
+
+    // viền đậm hơn nền
+    const borderColor = darkenHexColor(baseColor, 45)
+
     const r = cf.comboBox.cornerRadius
+
+    cvt.ctx.beginPath()
     cvt.ctx.moveTo(boxX + r, boxY)
     cvt.ctx.lineTo(boxX + boxWidth - r, boxY)
     cvt.ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + r)
@@ -328,17 +360,22 @@ export function drawComboBox(cf: Config, cvt: CanvasTool, card: Card, miscellane
     cvt.ctx.lineTo(boxX, boxY + r)
     cvt.ctx.quadraticCurveTo(boxX, boxY, boxX + r, boxY)
     cvt.ctx.closePath()
+
+    // nền
+    cvt.ctx.fillStyle = fillColor
     cvt.ctx.fill()
 
-    // Vẽ viền
-    cvt.ctx.strokeStyle = miscellaneous.getColor(effectivePower)
-    cvt.ctx.lineWidth = 1.5
+    // viền
+    cvt.ctx.strokeStyle = borderColor
+    cvt.ctx.lineWidth = 2
     cvt.ctx.stroke()
 
-    // Vẽ text (canh giữa trong hộp)
+    // text
     cvt.ctx.font = fontSize + 'px ' + card.comboFont
     applyText(cvt.ctx, cf.comboBox.textStyle)
-    cvt.ctx.fillStyle = card.comboColor || cvt.ctx.fillStyle
+    cvt.ctx.fillStyle = card.comboColor || '#ffffff'
+    cvt.ctx.textAlign = 'center'
+    cvt.ctx.textBaseline = 'middle'
     cvt.ctx.fillText(text, boxX + boxWidth / 2, boxY + boxHeight / 2)
 }
 
