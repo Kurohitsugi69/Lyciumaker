@@ -125,6 +125,7 @@ export class Card {
     power: string = Power['Thục']      // Thế lực
     isLord: boolean = false        // Có phải chúa công không
     dualFrame: string = ''         // Khung 2 thế lực (rỗng = không dùng)
+    outerFrameScale: number = 100   // Tỉ lệ thu/phóng khung ngoài, 100 = nguyên bản
     heart: number = 4              // Sinh lực
     isHreatLimit: boolean = false  // Có vẽ giới hạn sinh lực không
     heartLimit: number = 4         // Giới hạn sinh lực

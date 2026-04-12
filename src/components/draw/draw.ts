@@ -90,7 +90,12 @@ export function drawOutFrame(cvt: CanvasTool, card: Card, outFrame: OutFrame) {
         img = outFrame.get(card.power, card.isLord)
     }
     if (img) {
-        cvt.ctx.drawImage(img, 0, 0, cvt.logicSize.x, cvt.logicSize.y)
+        const scale = Math.max(0.1, (card.outerFrameScale ?? 100) / 100)
+        const width = cvt.logicSize.x * scale
+        const height = cvt.logicSize.y * scale
+        const dx = (cvt.logicSize.x - width) / 2
+        const dy = (cvt.logicSize.y - height) / 2
+        cvt.ctx.drawImage(img, dx, dy, width, height)
     }
 }
 

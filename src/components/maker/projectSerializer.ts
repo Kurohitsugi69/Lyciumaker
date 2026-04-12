@@ -61,6 +61,7 @@ export interface SerializedProject {
         heart: number
         isHreatLimit: boolean
         heartLimit: number
+        outerFrameScale?: number
         
         // Skills
         numSkill: number
@@ -172,6 +173,7 @@ export async function serializeCard(card: Card): Promise<SerializedProject> {
             power: card.power,
             isLord: card.isLord,
             dualFrame: card.dualFrame,
+            outerFrameScale: card.outerFrameScale,
             heart: card.heart,
             isHreatLimit: card.isHreatLimit,
             heartLimit: card.heartLimit,
@@ -232,6 +234,7 @@ export async function deserializeCard(projectJson: SerializedProject, card: Card
     card.power = data.power
     card.isLord = data.isLord
     card.dualFrame = data.dualFrame
+    card.outerFrameScale = data.outerFrameScale ?? card.outerFrameScale
     card.heart = data.heart
     card.isHreatLimit = data.isHreatLimit
     card.heartLimit = data.heartLimit

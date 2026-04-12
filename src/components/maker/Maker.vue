@@ -26,7 +26,7 @@ import { downloadJson } from '../puzzle/util'
 const props = defineProps(['version'])
 
 const logicWidth = 400
-const ratio = 88 / 63
+const ratio = 89 / 64
 const logicSize = new Vector(logicWidth, logicWidth * ratio)
 const styleSize = new Vector().like(logicSize)
 
@@ -524,6 +524,12 @@ onMounted(() => {
                     <option value="">— Không dùng —</option>
                     <option v-for="(val, name) in DualFrame" :value="name">{{ name }}</option>
                 </select>
+            </div>
+            <div class="row-flex-center">
+                <div class="x4">Tỉ lệ khung</div>
+                <input class="sizeInput" type="number" v-model.number="rcard.outerFrameScale" min="50" max="150">
+                <span class="sizeLabel">%</span>
+                <input type="range" min="50" max="150" v-model.number="rcard.outerFrameScale" style="flex:1; margin:0 8px;">
             </div>
             <div class="row-flex-center">
                 <div class="x4">Sinh lực</div>
